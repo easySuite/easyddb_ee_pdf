@@ -1,0 +1,5 @@
+name = Easyddb EE PDF
+description = Module for generating events list as a downloadable PDF file.
+core = 7.x
+package = Custom
+version = 1.0

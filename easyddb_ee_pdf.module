@@ -1,0 +1,70 @@
+<?php
+
+/**
+ * @file
+ * A custom module for Drupal 7, named 'easyddb_ee_pdf'.
+ */
+
+/**
+ * Implements hook_help().
+ */
+function easyddb_ee_pdf_help($path, $arg) {
+  if ($path == 'admin/help#easyddb_ee_pdf') {
+    return t('Module for generating events list as PDF file.');
+  }
+}
+
+/**
+ * Implements hook_menu().
+ */
+function easyddb_ee_pdf_menu() {
+  $items = [];
+
+  $items['admin/content/pdf'] = [
+    'title' => 'Events PDF',
+    'page callback' => 'drupal_get_form',
+    'page arguments' => ['easyddb_ee_pdf_generate_pdf_form'],
+    'access arguments' => array('generate events pdf'),
+    'type' => MENU_LOCAL_TASK,
+    'file' => 'easyddb_ee_pdf.pdf.inc',
+  ];
+
+  return $items;
+}
+
+/**
+ * Implements hook_permission().
+ */
+function easyddb_ee_pdf_permission() {
+  return [
+    'generate events pdf' => [
+      'title' => t('Generate events list as PDF'),
+      'description' => t('Check this to allow access to the page to generate events list as a PDF file.'),
+    ],
+  ];
+}
+
+/**
+ * Implements hook_theme().
+ */
+function easyddb_ee_pdf_theme($existing, $type, $theme, $path) {
+  return array(
+    'ee_pdf_event' => array(
+      'variables' => array('event' => NULL),
+      'template' => 'templates/ee_pdf_event',
+      'path' => drupal_get_path('module', 'easyddb_ee_pdf'),
+    ),
+  );
+}
+
+/**
+ * Implements template_preprocess_HOOK().
+ */
+function template_preprocess_ee_pdf_event(&$variables) {
+  $event = $variables['event'];
+
+  $variables['event_organization'] = 'ORG';
+  $variables['event_date'] = 'DATE';
+  $variables['event_location'] = 'LOC';
+  $variables['event_description'] = 'DESC';
+}
