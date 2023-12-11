@@ -52,7 +52,14 @@ function easyddb_ee_pdf_theme($existing, $type, $theme, $path) {
     'ee_pdf_event' => array(
       'variables' => array('event' => NULL),
       'template' => 'templates/ee_pdf_event',
-      'path' => drupal_get_path('module', 'easyddb_ee_pdf'),
+    ),
+    'ee_pdf_header' => array(
+      'variables' => array('title' => NULL),
+      'template' => 'templates/ee_pdf_header',
+    ),
+    'ee_pdf_footer' => array(
+      'variables' => array('title' => NULL),
+      'template' => 'templates/ee_pdf_footer',
     ),
   );
 }
@@ -60,11 +67,42 @@ function easyddb_ee_pdf_theme($existing, $type, $theme, $path) {
 /**
  * Implements template_preprocess_HOOK().
  */
-function template_preprocess_ee_pdf_event(&$variables) {
+function template_preprocess_ee_pdf_event(array &$variables) {
   $event = $variables['event'];
 
-  $variables['event_organization'] = 'ORG';
-  $variables['event_date'] = 'DATE';
-  $variables['event_location'] = 'LOC';
-  $variables['event_description'] = 'DESC';
+  $library_reference = field_get_items('node', $event, 'og_group_ref');
+  $library_node = node_load($library_reference[0]['target_id'] ?? NULL);
+  $variables['event_library'] = $library_node ? $library_node->title : '';
+
+  $event_date = field_get_items('node', $event, 'field_ding_event_date');
+  $event_date = $event_date[0] ?? '';
+  if ($event_date['value']) {
+    $event_date_obj = (DateTime::createFromFormat(
+      'Y-m-d H:i:s',
+      $event_date['value'],
+      (new \DateTimeZone($event_date['timezone_db']))
+    ));
+    $event_date_obj->setTimezone((new \DateTimeZone($event_date['timezone'])));
+  }
+  $variables['event_date'] = $event_date_obj->format('Y-m-d H:i:s');
+
+  $event_location = field_get_items('node', $event, 'field_ding_event_location');
+  $variables['event_location'] = implode(', ',
+    array_filter([
+      $event_location[0]['thoroughfare'] ?? '',
+      $event_location[0]['locality'] ?? '',
+    ])
+  );
+
+  $event_description = field_get_items('node', $event, 'field_ding_event_body');
+  $variables['event_description'] = $event_description[0]['safe_value'] ?? '';
+}
+
+/**
+ * Implements template_preprocess_HOOK().
+ */
+function template_preprocess_ee_pdf_header(array &$variables) {
+  $category_term = $variables['category_term'];
+
+  $variables['title'] = $category_term->name ?? '';
 }

@@ -3,7 +3,11 @@
  * @file
  */
 ?>
-<?php print $event_organization; ?>
-<?php print $event_date; ?>
-<?php print $event_location; ?>
-<?php print $event_description; ?>
+<div>
+  <h3><?php print $event_library; ?></h3>
+  <p>
+    <?php print $event_date; ?><br />
+    <?php print $event_location; ?>
+  </p>
+  <p><?php print $event_description; ?></p>
+</div>
