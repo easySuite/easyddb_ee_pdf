@@ -194,8 +194,7 @@ function easyddb_ee_pdf_load_events($year, $language): array {
     ->propertyCondition('type', 'ding_event')
     ->propertyCondition('language', $language)
     ->fieldCondition('field_ding_event_date', 'value', $year, 'STARTS_WITH')
-    ->propertyOrderBy('created', 'DESC')
-    ->range(0, 10);
+    ->propertyOrderBy('created', 'DESC');
 
   $result = $query->execute();
 
