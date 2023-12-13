@@ -17,7 +17,7 @@ function easyddb_ee_pdf_help($path, $arg) {
 /**
  * Implements hook_menu().
  */
-function easyddb_ee_pdf_menu() {
+function easyddb_ee_pdf_menu(): array {
   $items = [];
 
   $items['admin/content/pdf'] = [
@@ -35,7 +35,7 @@ function easyddb_ee_pdf_menu() {
 /**
  * Implements hook_permission().
  */
-function easyddb_ee_pdf_permission() {
+function easyddb_ee_pdf_permission(): array {
   return [
     'generate events pdf' => [
       'title' => t('Generate events list as PDF'),
@@ -47,21 +47,55 @@ function easyddb_ee_pdf_permission() {
 /**
  * Implements hook_theme().
  */
-function easyddb_ee_pdf_theme($existing, $type, $theme, $path) {
+function easyddb_ee_pdf_theme(): array {
   return array(
+    'ee_pdf_intro' => array(
+      'variables' => array(
+        'title' => NULL,
+        'intro' => NULL,
+      ),
+      'template' => 'templates/ee_pdf_intro',
+    ),
+    'ee_pdf_library_events' => array(
+      'variables' => array(
+        'library' => NULL,
+        'events' => NULL,
+      ),
+      'template' => 'templates/ee_pdf_library_events',
+    ),
     'ee_pdf_event' => array(
-      'variables' => array('event' => NULL),
+      'variables' => array(
+        'event' => NULL,
+      ),
       'template' => 'templates/ee_pdf_event',
     ),
     'ee_pdf_header' => array(
-      'variables' => array('title' => NULL),
+      'variables' => array(
+        'title' => NULL,
+      ),
       'template' => 'templates/ee_pdf_header',
     ),
     'ee_pdf_footer' => array(
-      'variables' => array('title' => NULL),
+      'variables' => array(
+        'title' => NULL,
+      ),
       'template' => 'templates/ee_pdf_footer',
     ),
   );
+}
+
+/**
+ * Process the events list into a markup before it gets to the template.
+ */
+function template_preprocess_ee_pdf_library_events(array &$variables) {
+  $events = $variables['events'];
+
+  $events_list = [];
+  foreach ($events as $event) {
+    $events_list[] = theme('ee_pdf_event', ['event' => $event]);
+  }
+
+  $variables['events_list'] = implode('', $events_list);
 }
 
 /**
@@ -70,21 +104,19 @@ function easyddb_ee_pdf_theme($existing, $type, $theme, $path) {
 function template_preprocess_ee_pdf_event(array &$variables) {
   $event = $variables['event'];
 
-  $library_reference = field_get_items('node', $event, 'og_group_ref');
-  $library_node = node_load($library_reference[0]['target_id'] ?? NULL);
-  $variables['event_library'] = $library_node ? $library_node->title : '';
-
   $event_date = field_get_items('node', $event, 'field_ding_event_date');
   $event_date = $event_date[0] ?? '';
   if ($event_date['value']) {
     $event_date_obj = (DateTime::createFromFormat(
       'Y-m-d H:i:s',
       $event_date['value'],
-      (new \DateTimeZone($event_date['timezone_db']))
+      (new DateTimeZone($event_date['timezone_db']))
     ));
-    $event_date_obj->setTimezone((new \DateTimeZone($event_date['timezone'])));
+    $event_date = $event_date_obj
+      ->setTimezone((new DateTimeZone($event_date['timezone'])))
+      ->format('Y-m-d H:i:s');
   }
-  $variables['event_date'] = $event_date_obj->format('Y-m-d H:i:s');
+  $variables['event_date'] = $event_date;
 
   $event_location = field_get_items('node', $event, 'field_ding_event_location');
   $variables['event_location'] = implode(', ',
@@ -96,13 +128,4 @@ function template_preprocess_ee_pdf_event(array &$variables) {
 
   $event_description = field_get_items('node', $event, 'field_ding_event_body');
   $variables['event_description'] = $event_description[0]['safe_value'] ?? '';
-}
-
-/**
- * Implements template_preprocess_HOOK().
- */
-function template_preprocess_ee_pdf_header(array &$variables) {
-  $category_term = $variables['category_term'];
-
-  $variables['title'] = $category_term->name ?? '';
 }
