@@ -7,11 +7,11 @@
 ?>
 <table>
   <tr>
-    <td style="width: 25%; height: 22cm;"></td>
+    <td style="width: 25%; height: 18cm;"></td>
     <td style="width: 50%; text-align: center;"><?php print $title; ?></td>
     <td style="width: 25%;"></td>
   </tr>
   <tr>
-    <td colspan="3"><?php print $intro; ?></td>
+    <td colspan="3" valign="bottom" style="height: 8cm; vertical-align: bottom;"><?php print $intro; ?></td>
   </tr>
 </table>
